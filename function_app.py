@@ -2,27 +2,34 @@ import azure.functions as func #import azure functions
 import datetime 
 import json
 import logging
+from services.employee_service import create_employee
 
 app = func.FunctionApp()    #Create the main app object and add endpoints to it 
 
+@app.route(route="employees",methods=["POST"],auth_level=func.AuthLevel.ANONYMOUS)
+def create_employee_endpoint(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        data = req.get_json()
+    except ValueError:
+        return func.HttpResponse("Invalid JSON",status_code = 400)
+    
+    first_name = data.get("FirstName")
+    last_name = data.get("LastName")
+    department_id = data.get("DepartmentID")
+    salary = data.get("Salary")
+    bonus = data.get("Bonus")
+    hire_date = data.get("HireDate")
 
-@app.route(route="HelloFunction", auth_level=func.AuthLevel.ANONYMOUS)
-def HelloFunction(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    if not all([first_name, last_name, department_id, salary]):
+        return func.HttpResponse("Missing fields",status_code = 400)
+    
+    employee_id = create_employee(first_name, last_name, department_id, salary, bonus, hire_date)
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
-
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+    return func.HttpResponse(
+    json.dumps({
+        "EmployeeID": employee_id,
+        "message": "Employee created successfully"
+    }),
+    status_code=201,
+    mimetype="application/json"
+    )
