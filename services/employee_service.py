@@ -44,14 +44,24 @@ def get_employee_by_id(employee_id):
     connection.close()
     return employee
 
-def get_all_employees():
+def get_all_employees(department_id = None):
     connection = get_connection()
     cursor = connection.cursor()
-    cursor.execute(
-        """
-        SELECT * FROM Employee 
-        """
+
+    if department_id is None:
+        cursor.execute(
+            """
+            SELECT * FROM Employee 
+            """
+            )
+    else:
+        cursor.execute(
+            """
+            SELECT * FROM Employee WHERE DepartmentID = ?
+            """,
+            (department_id,)
         )
+        
     employees = cursor.fetchall()
     connection.close()        
     return employees
@@ -85,4 +95,18 @@ def update_employee(employee_id,first_name, last_name, department_id, salary, bo
     rows_updated = cursor.rowcount
     connection.close()   
 
-    return rows_updated      
+    return rows_updated   
+
+def delete_employee(employee_id):
+    connection = get_connection()  
+    cursor = connection.cursor()   
+    cursor.execute(                 
+        """
+        DELETE FROM Employee WHERE EmployeeID = ?
+        """,
+        (employee_id,)
+    )       
+    connection.commit() 
+    rows_deleted = cursor.rowcount
+    connection.close()   
+    return rows_deleted
