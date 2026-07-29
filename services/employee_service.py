@@ -55,3 +55,34 @@ def get_all_employees():
     employees = cursor.fetchall()
     connection.close()        
     return employees
+
+def update_employee(employee_id,first_name, last_name, department_id, salary, bonus, hire_date):
+    connection = get_connection()  
+    cursor = connection.cursor()   
+    cursor.execute(                 
+        """
+        UPDATE Employee
+        SET
+            FirstName = ?,
+            LastName = ?,
+            DepartmentID = ?,
+            Salary = ?,
+            Bonus = ?,
+            HireDate = ?
+        WHERE EmployeeID = ?
+        """,
+        (
+            first_name,
+            last_name,
+            department_id,
+            salary,
+            bonus,
+            hire_date,
+            employee_id
+        )) 
+
+    connection.commit() 
+    rows_updated = cursor.rowcount
+    connection.close()   
+
+    return rows_updated      
