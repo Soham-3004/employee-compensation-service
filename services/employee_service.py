@@ -36,7 +36,16 @@ def get_employee_by_id(employee_id):
     cursor = connection.cursor()
     cursor.execute(
         """
-            SELECT * FROM Employee WHERE EmployeeID = ?
+            SELECT
+                EmployeeID,
+                FirstName,
+                LastName,
+                DepartmentID,
+                Salary,
+                COALESCE(Bonus, ROUND(Salary * 0.05, 2)) AS Bonus,
+                HireDate
+            FROM Employee
+            WHERE EmployeeID = ?;
         """,
         (employee_id,)
     )
@@ -51,7 +60,15 @@ def get_all_employees(department_id = None):
     if department_id is None:
         cursor.execute(
             """
-            SELECT * FROM Employee 
+            SELECT
+                EmployeeID,
+                FirstName,
+                LastName,
+                DepartmentID,
+                Salary,
+                COALESCE(Bonus, ROUND(Salary * 0.05, 2)) AS Bonus,
+                HireDate
+            FROM Employee;
             """
             )
     else:

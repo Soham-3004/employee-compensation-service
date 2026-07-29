@@ -1,34 +1,67 @@
-# Employee Compensation Service - Development Commands
+# Development Commands
 
----
+## Install WSL Ubuntu
 
-# Python
-
-## Check Python version
-
-```bash
-python3 --version
+```powershell
+wsl --install -d Ubuntu
 ```
 
 ---
 
-# pip
-
-## Check pip version
+## Install Required Packages
 
 ```bash
-pip3 --version
-```
+sudo apt update
 
-## Upgrade pip
+sudo apt install -y \
+python3 \
+python3-pip \
+python3-venv \
+sqlite3 \
+curl
 
-```bash
-python -m pip install --upgrade pip
+curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+
+sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ jammy main" > /etc/apt/sources.list.d/azure-cli.list'
+
+sudo apt update
+
+sudo apt install azure-cli
+
+npm install -g azure-functions-core-tools@4 --unsafe-perm true
 ```
 
 ---
 
-# Virtual Environment
+## Clone Repository
+
+```bash
+git clone <repository-url>
+
+cd employee-compensation-service
+```
+
+---
+
+## Create Database
+
+```bash
+sqlite3 database/employee.db < database/schema.sql
+
+sqlite3 database/employee.db < database/seed.sql
+```
+
+---
+
+## Configure Local Settings
+
+```bash
+cp local.settings.example.json local.settings.json
+```
+
+---
 
 ## Create Virtual Environment
 
@@ -36,71 +69,25 @@ python -m pip install --upgrade pip
 python3 -m venv .venv
 ```
 
-## Activate Virtual Environment (Linux / WSL)
+---
+
+## Activate Virtual Environment
 
 ```bash
 source .venv/bin/activate
 ```
 
-## Deactivate Virtual Environment
-
-```bash
-deactivate
-```
-
 ---
 
-# Install Project Dependencies
+## Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Save Installed Packages
-
-```bash
-pip freeze > requirements.txt
-```
-
 ---
 
-# Azure Functions Core Tools
-
-## Create New Azure Function Project
-
-```bash
-func init
-```
-
-Choose:
-
-```
-Python
-```
-
----
-
-## Create a New Function
-
-```bash
-func new
-```
-
-Choose:
-
-```
-HTTP Trigger
-```
-
-Authorization:
-
-```
-Anonymous
-```
-
----
-
-## Start Azure Function App
+## Start Azure Function
 
 ```bash
 func start
@@ -108,236 +95,108 @@ func start
 
 ---
 
-# SQLite
+# Testing Commands
 
-## Install SQLite
-
-```bash
-sudo apt update
-sudo apt install sqlite3 -y
-```
-
-## Check SQLite Version
+## Create Employee
 
 ```bash
-sqlite3 --version
-```
-
----
-
-## Create / Open Database
-
-```bash
-sqlite3 employee.db
-```
-
-If the database does not exist, SQLite creates it automatically.
-
----
-
-## Execute SQL File
-
-```sql
-.read schema.sql
-```
-
----
-
-## Execute Seed File
-
-```sql
-.read seed.sql
-```
-
----
-
-## Show All Tables
-
-```sql
-.tables
-```
-
----
-
-## Show Schema of One Table
-
-```sql
-.schema Employee
-```
-
-```sql
-.schema Department
-```
-
----
-
-## Show Entire Database Schema
-
-```sql
-.schema
-```
-
----
-
-## Show Data
-
-```sql
-SELECT * FROM Employee;
-```
-
-```sql
-SELECT * FROM Department;
-```
-
----
-
-## Exit SQLite
-
-```sql
-.quit
-```
-
-or
-
-```text
-Ctrl + D
-```
-
----
-
-# Linux Commands
-
-## Current Directory
-
-```bash
-pwd
-```
-
----
-
-## List Files
-
-```bash
-ls
-```
-
----
-
-## List Files with Details
-
-```bash
-ls -la
-```
-
----
-
-## Change Directory
-
-```bash
-cd folder_name
-```
-
-Go back one directory:
-
-```bash
-cd ..
-```
-
----
-
-## Create Folder
-
-```bash
-mkdir folder_name
-```
-
----
-
-## Create Multiple Folders
-
-```bash
-mkdir database models services utils
-```
-
----
-
-## Create Empty File
-
-```bash
-touch filename.py
-```
-
-Example:
-
-```bash
-touch employee_service.py
-```
-
----
-
-# Git
-
-## Check Status
-
-```bash
-git status
-```
-
----
-
-## Add Files
-
-```bash
-git add .
-```
-
----
-
-## Commit
-
-```bash
-git commit -m "Your message"
-```
-
----
-
-## Push
-
-```bash
-git push
-```
-
----
-
-# Useful Testing
-
-## Browser
-
-```
-http://localhost:7071/api/HelloFunction
-```
-
-Query Parameter
-
-```
-http://localhost:7071/api/HelloFunction?name=Soham
-```
-
----
-
-## GET using curl
-
-```bash
-curl http://localhost:7071/api/HelloFunction
-```
-
----
-
-## POST using curl
-
-```bash
-curl -X POST \
+curl -X POST http://localhost:7071/api/employees \
 -H "Content-Type: application/json" \
--d '{"name":"Soham"}' \
-http://localhost:7071/api/HelloFunction
+-d '{
+    "FirstName":"John",
+    "LastName":"Doe",
+    "DepartmentID":1,
+    "Salary":70000,
+    "Bonus":5000,
+    "HireDate":"2026-07-29"
+}'
+```
+
+---
+
+## Get All Employees
+
+```bash
+curl http://localhost:7071/api/employees
+```
+
+---
+
+## Get Employee By ID
+
+```bash
+curl http://localhost:7071/api/employees/1
+```
+
+---
+
+## Update Employee
+
+```bash
+curl -X PUT http://localhost:7071/api/employees/1 \
+-H "Content-Type: application/json" \
+-d '{
+    "FirstName":"John",
+    "LastName":"Doe",
+    "DepartmentID":1,
+    "Salary":75000,
+    "Bonus":6000,
+    "HireDate":"2026-07-29"
+}'
+```
+
+---
+
+## Delete Employee
+
+```bash
+curl -X DELETE http://localhost:7071/api/employees/1
+```
+
+---
+
+## Total Bonus
+
+```bash
+curl http://localhost:7071/api/reports/total-bonus
+```
+
+---
+
+## Employees With No Bonus
+
+```bash
+curl http://localhost:7071/api/reports/no-bonus
+```
+
+---
+
+## Bonus Percentage
+
+```bash
+curl http://localhost:7071/api/reports/bonus-percentage
+```
+
+---
+
+## High Bonus Departments
+
+```bash
+curl http://localhost:7071/api/reports/high-bonus-departments
+```
+
+---
+
+## Bonus Ranking
+
+```bash
+curl http://localhost:7071/api/reports/bonus-ranking
+```
+
+---
+
+## Highest Compensation
+
+```bash
+curl http://localhost:7071/api/reports/highest-compensation
 ```
