@@ -1,8 +1,8 @@
-import azure.functions as func #import azure functions
+import azure.functions as func # type: ignore #import azure functions
 import datetime 
 import json
 import logging
-from services.employee_service import create_employee
+from services.employee_service import create_employee, get_employee_by_id, get_all_employees
 
 app = func.FunctionApp()    #Create the main app object and add endpoints to it 
 
@@ -32,4 +32,34 @@ def create_employee_endpoint(req: func.HttpRequest) -> func.HttpResponse:
     }),
     status_code=201,
     mimetype="application/json"
+    )
+
+
+@app.route(route="employees/{id:int}",methods=["GET"],auth_level=func.AuthLevel.ANONYMOUS)
+def get_employee_by_id_endpoint(req: func.HttpRequest):
+    employee_id = int(req.route_params.get("id"))
+    employee = get_employee_by_id(employee_id)
+    if employee is None:
+        return func.HttpResponse(json.dumps({"message": "Employee not found"}),
+            status_code=404,
+            mimetype="application/json"
+        )
+    else:
+        employee_data = dict(employee)
+        return func.HttpResponse(json.dumps(employee_data),
+            status_code=200,
+            mimetype="application/json"
+        )
+
+@app.route(route="employees",methods=["GET"],auth_level=func.AuthLevel.ANONYMOUS)
+def get_all_employees_endpoint(req: func.HttpRequest):
+    employees = get_all_employees()
+    employees_data = []
+    for employee in employees:
+        employees_data.append(dict(employee))
+
+    return func.HttpResponse(
+        json.dumps(employees_data),
+        status_code=200,
+        mimetype="application/json"
     )

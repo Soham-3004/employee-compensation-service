@@ -30,3 +30,28 @@ def create_employee(first_name, last_name, department_id, salary, bonus, hire_da
     connection.close()  #close connection 
 
     return employee_id  #return the created employee
+
+def get_employee_by_id(employee_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+            SELECT * FROM Employee WHERE EmployeeID = ?
+        """,
+        (employee_id,)
+    )
+    employee = cursor.fetchone()
+    connection.close()
+    return employee
+
+def get_all_employees():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM Employee 
+        """
+        )
+    employees = cursor.fetchall()
+    connection.close()        
+    return employees

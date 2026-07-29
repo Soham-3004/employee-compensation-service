@@ -1,0 +1,1 @@
+Copy local.settings.example.json to local.settings.json before running the project.
